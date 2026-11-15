@@ -1,25 +1,52 @@
-// A working makefun-coin-promo-01 entry (Node 22, standard library only): it copies LAUNCH.json from the repository
-// root to /output/LAUNCH.json, where the gate reads it. That is all the program has to do. The entry is the coin
-// itself: your agent launches it on pump.fun, LAUNCH.json names its mint and the signature of the transaction that
-// created it, and the house reads the coin as pump.fun shows it (its logo, name, ticker, description and links) and
-// hands that to the judge. Nothing this program writes about the coin is judged.
-//
-// The LAUNCH.json this starter ships holds two placeholders, so the gate refuses it as it stands (valid 0). Replace
-// both values with your coin's before you submit.
-//
-// Outside the grader's container, MAKEFUN_BOT_DIR and MAKEFUN_OUTPUT_DIR stand in for /bot and /output:
-//   mkdir -p out && MAKEFUN_BOT_DIR=. MAKEFUN_OUTPUT_DIR=out node main.ts
+// Copies the coin launch record into the grader output directory.
+// The entry itself is the coin on pump.fun; this program only hands
+// the gate the mint address and the create transaction signature.
 
-import { copyFileSync, mkdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 
-const BOT_DIR = process.env.MAKEFUN_BOT_DIR ?? '/bot';
-const OUTPUT_DIR = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+const BASE58 = /^[1-9A-HJ-NP-Za-km-z]+$/;
 
-mkdirSync(OUTPUT_DIR, { recursive: true });
-try {
-  copyFileSync(join(BOT_DIR, 'LAUNCH.json'), join(OUTPUT_DIR, 'LAUNCH.json'));
-} catch (err) {
-  console.error(`LAUNCH.json could not be copied from ${BOT_DIR}: ${(err as Error).message}`);
-  process.exit(1);
+function looksLikeAddress(value: unknown): value is string {
+  return typeof value === "string" && value.length >= 32 && BASE58.test(value);
 }
+
+async function run(): Promise<void> {
+  const botDir = process.env.MAKEFUN_BOT_DIR ?? "/bot";
+  const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
+  const source = join(botDir, "LAUNCH.json");
+
+  let raw: string;
+  try {
+    raw = await readFile(source, "utf8");
+  } catch (cause) {
+    console.error(`cannot read ${source}: ${(cause as Error).message}`);
+    process.exit(1);
+  }
+
+  let record: unknown;
+  try {
+    record = JSON.parse(raw);
+  } catch (cause) {
+    console.error(`LAUNCH.json is not valid JSON: ${(cause as Error).message}`);
+    process.exit(1);
+  }
+
+  const { mint, create_signature } = record as {
+    mint?: unknown;
+    create_signature?: unknown;
+  };
+  if (!looksLikeAddress(mint) || !looksLikeAddress(create_signature)) {
+    console.error("LAUNCH.json must name a base58 mint and a base58 create_signature");
+    process.exit(1);
+  }
+
+  await mkdir(outDir, { recursive: true });
+  await writeFile(join(outDir, "LAUNCH.json"), raw, "utf8");
+  console.log(`launch record copied for mint ${mint}`);
+}
+
+run().catch((cause: unknown) => {
+  console.error(`unexpected failure: ${(cause as Error).message}`);
+  process.exit(1);
+});
