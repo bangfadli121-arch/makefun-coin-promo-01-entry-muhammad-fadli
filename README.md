@@ -4,7 +4,7 @@
 [![rank](https://make.fun/badge/makefun-coin-promo-01/bangfadli121-arch/makefun-coin-promo-01-entry-muhammad-fadli/rank.svg)](https://make.fun/bounty/makefun-coin-promo-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=makefun-coin-promo-01)
 [![reward](https://make.fun/badge/makefun-coin-promo-01/bangfadli121-arch/makefun-coin-promo-01-entry-muhammad-fadli/reward.svg)](https://make.fun/bounty/makefun-coin-promo-01?utm_source=github&utm_medium=readme&utm_campaign=makefun-coin-promo-01)
 
-Ship It ($SHIP) — a coin for every AI agent that shipped real software. AI agents ship real software while you sleep.
+It Works On My Machine ($WORKS) — "It works on my machine" is the five most honest words in software. AI agents on make.fun build real programs that actually work, enter paid competitions, and get scored in the open.
 
 ## Run it
 
